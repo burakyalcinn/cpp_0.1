@@ -1,0 +1,342 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm> // sort işlevi için gerekli başlık dosyası
+
+using namespace std;
+
+// Hayvan sınıfı
+class Hayvan {
+public:
+    string ad;
+    string tur;
+    int yas;
+
+    Hayvan(string ad, string tur, int yas) {
+        this->ad = ad;
+        this->tur = tur;
+        this->yas = yas;
+    }
+
+    virtual void ozellikleriGoster() {
+        cout << "Hayvan Ozellikleri:" << endl;
+        cout << "Ad: " << ad << endl;
+        cout << "Tur: " << tur << endl;
+        cout << "Yas: " << yas << endl;
+    }
+
+    virtual void besle() {
+        cout << ad << " beslendi." << endl;
+    }
+};
+
+// Aslan sınıfı (Hayvan sınıfından türetilmiş)
+class Aslan : public Hayvan {
+public:
+    string renk;
+
+    Aslan(string ad, string tur, int yas, string renk)
+        : Hayvan(ad, tur, yas) {
+        this->renk = renk;
+    }
+
+    void ozellikleriGoster() override {
+        Hayvan::ozellikleriGoster();
+        cout << "Renk: " << renk << endl;
+    }
+
+    void besle() override {
+        cout << ad << " aslanı etle besleniyor." << endl;
+    }
+};
+
+// Zebra sınıfı (Hayvan sınıfından türetilmiş)
+class Zebra : public Hayvan {
+public:
+    int cizgiSayisi;
+
+    Zebra(string ad, string tur, int yas, int cizgiSayisi)
+        : Hayvan(ad, tur, yas) {
+        this->cizgiSayisi = cizgiSayisi;
+    }
+
+    void ozellikleriGoster() override {
+        Hayvan::ozellikleriGoster();
+        cout << "Cizgi Sayisi: " << cizgiSayisi << endl;
+    }
+    
+    void besle() override {
+        cout << ad << " zebra, otlarla besleniyor." << endl;
+    }
+};
+
+// Kartal sınıfı (Hayvan sınıfından türetilmiş)
+class Kartal : public Hayvan {
+public:
+    double kanatAcligi;
+
+    Kartal(string ad, string tur, int yas, double kanatAcligi)
+        : Hayvan(ad, tur, yas) {
+        this->kanatAcligi = kanatAcligi;
+    }
+
+    void ozellikleriGoster() override {
+        Hayvan::ozellikleriGoster();
+        cout << "Kanat Acligi: " << kanatAcligi << endl;
+    }
+    
+    void besle() override {
+        cout << ad << " kartalı etle besleniyor." << endl;
+    }
+};
+
+// Hayvanat Bahçesi sınıfı
+class HayvanatBahcesi {
+private:
+    vector<Hayvan*> hayvanlar;
+
+public:
+    HayvanatBahcesi() {
+        // Otomatik olarak belirli hayvanları ekleyebiliriz
+        Aslan* aslan1 = new Aslan("Simba", "Aslan", 10, "Sarı");
+        Aslan* aslan2 = new Aslan("Mufasa", "Aslan", 5, "Kahverengi");
+        Aslan* aslan3 = new Aslan("Marty", "Aslan", 7, "Beyaz");
+        Zebra* zebra = new Zebra("Alex", "Zebra", 4, 10);
+        Kartal* kartal = new Kartal("Eagle", "Kartal", 2, 1.5);
+
+        hayvanlar.push_back(aslan1);
+        hayvanlar.push_back(aslan2);
+        hayvanlar.push_back(aslan3);
+        hayvanlar.push_back(zebra);
+        hayvanlar.push_back(kartal);
+    }
+
+    ~HayvanatBahcesi() {
+        for (const auto& hayvan : hayvanlar) {
+            delete hayvan;
+        }
+    }
+
+    void hayvanEkle(string ad, string tur, int yas) {
+        if (tur == "Aslan") {
+            string renk;
+            cout << "Aslan rengi: ";
+            cin >> renk;
+            Aslan* yeniAslan = new Aslan(ad, tur, yas, renk);
+            hayvanlar.push_back(yeniAslan);
+            cout << "Aslan eklendi: " << ad << endl;
+        }
+        else if (tur == "Zebra") {
+            int cizgiSayisi;
+            cout << "Zebra cizgi sayisi: ";
+            cin >> cizgiSayisi;
+            Zebra* yeniZebra = new Zebra(ad, tur, yas, cizgiSayisi);
+            hayvanlar.push_back(yeniZebra);
+            cout << "Zebra eklendi: " << ad << endl;
+        }
+        else if (tur == "Kartal") {
+            double kanatAcligi;
+            cout << "Kartal kanat acligi: ";
+            cin >> kanatAcligi;
+            Kartal* yeniKartal = new Kartal(ad, tur, yas, kanatAcligi);
+            hayvanlar.push_back(yeniKartal);
+            cout << "Kartal eklendi: " << ad << endl;
+        }
+        else {
+            cout << "Böyle bir tür bulunmamaktadir. (Aslan, Zebra, Kartal)" << endl;
+        }
+    }
+
+    void hayvanlariGoster() {
+    cout << "Hayvanlar:" << endl;
+
+    // Hayvanları yaşlarına göre küçükten büyüğe sıralama
+    auto compareByYas = [](const Hayvan* hayvan1, const Hayvan* hayvan2) {
+        return hayvan1->yas < hayvan2->yas;
+    };
+    sort(hayvanlar.begin(), hayvanlar.end(), compareByYas);
+
+    // Hayvanları türlerine göre ayrıştırma
+    vector<Aslan*> aslanlar;
+    vector<Zebra*> zebralar;
+    vector<Kartal*> kartallar;
+
+    for (const auto& hayvan : hayvanlar) {
+        if (Aslan* aslan = dynamic_cast<Aslan*>(hayvan)) {
+            aslanlar.push_back(aslan);
+        }
+        else if (Zebra* zebra = dynamic_cast<Zebra*>(hayvan)) {
+            zebralar.push_back(zebra);
+        }
+        else if (Kartal* kartal = dynamic_cast<Kartal*>(hayvan)) {
+            kartallar.push_back(kartal);
+        }
+    }
+
+    // Aslanları yaşlarına göre sıralama
+    for (const auto& aslan : aslanlar) {
+        aslan->ozellikleriGoster();
+        cout << endl;
+    }
+
+    // Zebraları yaşlarına göre sıralama
+    for (const auto& zebra : zebralar) {
+        zebra->ozellikleriGoster();
+        cout << endl;
+    }
+
+    // Kartalları yaşlarına göre sıralama
+    for (const auto& kartal : kartallar) {
+        kartal->ozellikleriGoster();
+        cout << endl;
+    }
+
+    // Her türün yaşlarının harmonik ortalamasını ve aritmetik ortalamasını hesapla
+    vector<int> aslanYaslar;
+    vector<int> zebraYaslar;
+    vector<int> kartalYaslar;
+
+    for (const auto& hayvan : hayvanlar) {
+        if (Aslan* aslan = dynamic_cast<Aslan*>(hayvan)) {
+            aslanYaslar.push_back(aslan->yas);
+        }
+        else if (Zebra* zebra = dynamic_cast<Zebra*>(hayvan)) {
+            zebraYaslar.push_back(zebra->yas);
+        }
+        else if (Kartal* kartal = dynamic_cast<Kartal*>(hayvan)) {
+            kartalYaslar.push_back(kartal->yas);
+        }
+    }
+
+    double aslanHarmonikOrtalama = 0.0;
+    double zebraHarmonikOrtalama = 0.0;
+    double kartalHarmonikOrtalama = 0.0;
+    double aslanAritmetikOrtalama = 0.0;
+    double zebraAritmetikOrtalama = 0.0;
+    double kartalAritmetikOrtalama = 0.0;
+
+    if (!aslanYaslar.empty()) {
+        for (const auto& yas : aslanYaslar) {
+            aslanHarmonikOrtalama += 1.0 / yas;
+            aslanAritmetikOrtalama += yas;
+        }
+        aslanHarmonikOrtalama = static_cast<double>(aslanYaslar.size()) / aslanHarmonikOrtalama;
+        aslanAritmetikOrtalama /= aslanYaslar.size();
+    }
+
+    if (!zebraYaslar.empty()) {
+        for (const auto& yas : zebraYaslar) {
+            zebraHarmonikOrtalama += 1.0 / yas;
+            zebraAritmetikOrtalama += yas;
+        }
+        zebraHarmonikOrtalama = static_cast<double>(zebraYaslar.size()) / zebraHarmonikOrtalama;
+        zebraAritmetikOrtalama /= zebraYaslar.size();
+    }
+
+    if (!kartalYaslar.empty()) {
+        for (const auto& yas : kartalYaslar) {
+            kartalHarmonikOrtalama += 1.0 / yas;
+            kartalAritmetikOrtalama += yas;
+        }
+        kartalHarmonikOrtalama = static_cast<double>(kartalYaslar.size()) / kartalHarmonikOrtalama;
+        kartalAritmetikOrtalama /= kartalYaslar.size();
+    }
+
+    cout << "Aslanlarin Yas Ortalamalari:" << endl;
+    cout << "Harmonik Ortalama: " << aslanHarmonikOrtalama << endl;
+    cout << "Aritmetik Ortalama: " << aslanAritmetikOrtalama << endl;
+
+    cout << "Zebralarin Yas Ortalamalari:" << endl;
+    cout << "Harmonik Ortalama: " << zebraHarmonikOrtalama << endl;
+    cout << "Aritmetik Ortalama: " << zebraAritmetikOrtalama << endl;
+
+    cout << "Kartallarin Yas Ortalamalari:" << endl;
+    cout << "Harmonik Ortalama: " << kartalHarmonikOrtalama << endl;
+    cout << "Aritmetik Ortalama: " << kartalAritmetikOrtalama << endl;
+}
+
+
+    void hayvanBesle(string ad) {
+        for (const auto& hayvan : hayvanlar) {
+            if (hayvan->ad == ad) {
+                hayvan->besle();
+                return;
+            }
+        }
+        cout << "Hayvan bulunamadi." << endl;
+    }
+
+    void hayvanDuzenle(string ad, string yeniAd, string yeniTur, int yeniYas) {
+        for (const auto& hayvan : hayvanlar) {
+            if (hayvan->ad == ad) {
+                hayvan->ad = yeniAd;
+                hayvan->tur = yeniTur;
+                hayvan->yas = yeniYas;
+                cout << ad << " duzenlendi." << endl;
+                return;
+            }
+        }
+        cout << "Hayvan bulunamadi." << endl;
+    }
+};
+
+int main() {
+    HayvanatBahcesi hayvanatBahcesi;
+
+    while (true) {
+        cout << "\n--- Hayvanat Bahcesi Yönetim Sistemi ---" << endl;
+        cout << "1. Hayvan Ekle " << endl;
+        cout << "2. Hayvanlari Goster" << endl;
+        cout << "3. Hayvan Besle" << endl;
+        cout << "4. Hayvan Duzenle" << endl;
+        cout << "5. Cikis" << endl;
+
+        int secim;
+        cout << "\nSeciminizi yapin: ";
+        cin >> secim;
+
+        if (secim == 1) {
+            string ad, tur;
+            int yas;
+            cout << "Hayvan adi: ";
+            cin >> ad;
+            cout << "Hayvan turu (Aslan, Zebra, Kartal): ";
+            cin >> tur;
+            cout << "Hayvan yasi: ";
+            cin >> yas;
+            hayvanatBahcesi.hayvanEkle(ad, tur, yas);
+        }
+        else if (secim == 2) {
+            hayvanatBahcesi.hayvanlariGoster();
+        }
+        else if (secim == 3) {
+            string ad;
+            cout << "Beslemek istediginiz hayvanin adi: ";
+            cin >> ad;
+            hayvanatBahcesi.hayvanBesle(ad);
+        }
+        else if (secim == 4) {
+            string ad, yeniAd, yeniTur;
+            int yeniYas;
+            cout << "Duzenlemek istediginiz hayvanin adi: ";
+            cin >> ad;
+            cout << "Yeni hayvan adi: ";
+            cin >> yeniAd;
+            cout << "Yeni hayvan turu (Aslan, Zebra, Kartal): ";
+            cin >> yeniTur;
+            cout << "Yeni hayvan yasi: ";
+            cin >> yeniYas;
+            hayvanatBahcesi.hayvanDuzenle(ad, yeniAd, yeniTur, yeniYas);
+        }
+        else if (secim == 5) {
+            break;
+        }
+        else {
+            cout << "Gecersiz secim. Tekrar deneyin." << endl;
+        }
+    }
+
+    cout << "Programdan cikiliyor..." << endl;
+
+    return 0;
+}
